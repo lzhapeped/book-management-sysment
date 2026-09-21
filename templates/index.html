@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>图书馆预约管理系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+</head>
+
+<body>
+
+    <div id="login" class="login">
+        <h2>用户登录</h2>
+        <input id="login_user" placeholder="账号">
+        <input id="login_pwd" placeholder="密码" type="password">
+        <button onclick="login()">登录</button>
+    </div>
+
+    <div id="main" style="display:none">
+        <div class="box">
+            <h1>图书馆预约管理数据库系统</h1>
+            <div id="user_info" style="color:#666;margin-bottom:10px"></div>
+            <button id="switch_account_btn" onclick="switchAccount()" style="display:none;margin-bottom:10px;background:#3cc5e7">切换账号</button>
+
+            <div class="tab">
+                <button class="active" onclick="showPanel('home',this)">首页</button>
+                <button onclick="showPanel('reader',this)">读者管理</button>
+                <button onclick="showPanel('book',this)">图书管理</button>
+                <button onclick="showPanel('seat',this)">座位管理</button>
+                <button onclick="showPanel('borrow',this)">借阅管理</button>
+            </div>
+
+            <div id="home" class="panel">
+                <h2>数据总览</h2>
+                <div class="dashboard">
+                    <div class="card">
+                        <h3>读者总数</h3>
+                        <div class="num" id="reader_cnt">0</div>
+                    </div>
+                    <div class="card">
+                        <h3>图书总数</h3>
+                        <div class="num" id="book_cnt">0</div>
+                    </div>
+                    <div class="card">
+                        <h3>座位总数</h3>
+                        <div class="num" id="seat_cnt">0</div>
+                    </div>
+                    <div class="card">
+                        <h3>借阅记录</h3>
+                        <div class="num" id="br_cnt">0</div>
+                    </div>
+                    <div class="card">
+                        <h3>可借图书</h3>
+                        <div class="num" id="can_borrow_cnt">0</div>
+                    </div>
+                    <div class="card">
+                        <h3>待完成记录</h3>
+                        <div class="num" id="pending_cnt">0</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="chart-box">
+                        <h3>数量统计柱状图</h3>
+                        <div id="chart"></div>
+                    </div>
+                    <div class="chart-box">
+                        <h3>读者类型分布</h3>
+                        <div id="pie1"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="chart-box">
+                        <h3>借阅状态分布</h3>
+                        <div id="pie2"></div>
+                    </div>
+                    <div class="chart-box">
+                        <h3>图书分类分布</h3>
+                        <div id="cat_pie"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="chart-box">
+                        <h3>座位状态分布</h3>
+                        <div id="seat_pie"></div>
+                    </div>
+                    <div class="chart-box">
+                        <h3>楼层座位数量</h3>
+                        <div id="floor_bar"></div>
+                    </div>
+                    <div class="chart-box">
+                        <h3>读者借阅次数TOP5</h3>
+                        <div id="top_reader"></div>
+                    </div>
+                </div>
+                <div class="analysis">
+                    <h3>数据分析结论</h3>
+                    <div id="analysis_text"></div>
+                </div>
+                <div class="analysis">
+                    <h3>借阅状态汇总</h3>
+                    <div id="state_summary"></div>
+                </div>
+            </div>
+
+            <!-- 读者管理 (reader表) -->
+            <div id="reader" class="panel" style="display:none">
+                <h2>读者管理</h2>
+                <div class="search-bar">
+                    <input id="rd_search_input" placeholder="输入编号/姓名/类型查询">
+                    <button onclick="rdSearch()">查询</button>
+                    <button onclick="rdList()">显示全部</button>
+                </div>
+                <div class="divider"></div>
+                <div class="panel-actions">
+                    <button class="secondary" onclick="rdAdd()">新增</button>
+                    <button class="secondary" onclick="rdUpdate()">修改</button>
+                    <button class="secondary" onclick="rdDel()">删除</button>
+                </div>
+                <div class="form-row">
+                    <input id="rd_rid" placeholder="读者编号">
+                    <input id="rd_rname" placeholder="姓名">
+                    <select id="rd_rtype">
+                <option value="">选择类型</option>
+                <option value="学生">学生</option>
+                <option value="教工">教工</option>
+            </select>
+                    <input id="rd_rmajor" placeholder="专业">
+                </div>
+                <div class="form-row">
+                    <input id="rd_rphone" placeholder="手机号">
+                    <input id="rd_remail" placeholder="邮箱">
+                    <select id="rd_rstatus">
+                <option value="">账号状态</option>
+                <option value="正常">正常</option>
+                <option value="封禁">封禁</option>
+                <option value="注销">注销</option>
+            </select>
+                </div>
+                <table id="rd_table"></table>
+            </div>
+
+            <!-- 图书管理 (book表) -->
+            <div id="book" class="panel" style="display:none">
+                <h2>图书管理</h2>
+                <div class="search-bar">
+                    <input id="bk_search_input" placeholder="输入ISBN/书名/作者查询">
+                    <button onclick="bkSearch()">查询</button>
+                    <button onclick="bkList()">显示全部</button>
+                </div>
+                <div class="divider"></div>
+                <div class="panel-actions">
+                    <button class="secondary" onclick="bkAdd()">新增</button>
+                    <button class="secondary" onclick="bkUpdate()">修改</button>
+                    <button class="secondary" onclick="bkDel()">删除</button>
+                </div>
+                <div class="form-row">
+                    <input id="bk_bid" placeholder="ISBN编号">
+                    <input id="bk_bname" placeholder="书名">
+                    <input id="bk_bauthor" placeholder="作者">
+                    <select id="bk_bcategory">
+                <option value="">图书分类</option>
+                <option value="文学">文学</option>
+                <option value="计算机">计算机</option>
+                <option value="数理">数理</option>
+                <option value="历史">历史</option>
+            </select>
+                </div>
+                <div class="form-row">
+                    <input id="bk_bpress" placeholder="出版社">
+                    <input id="bk_bpub_date" type="date" placeholder="出版日期">
+                    <input id="bk_btotal" type="number" placeholder="馆藏总数">
+                    <input id="bk_bcan_borrow" type="number" placeholder="可借数量">
+                </div>
+                <div class="form-row">
+                    <input id="bk_bshelf" placeholder="书架号">
+                    <input id="bk_bprice" type="number" step="0.01" placeholder="定价">
+                </div>
+                <table id="bk_table"></table>
+            </div>
+
+            <!-- 座位管理 (seat表) -->
+            <div id="seat" class="panel" style="display:none">
+                <h2>座位管理</h2>
+                <div class="search-bar">
+                    <input id="st_search_input" placeholder="输入座位号/楼层/自习室查询">
+                    <button onclick="stSearch()">查询</button>
+                    <button onclick="stList()">显示全部</button>
+                </div>
+                <div class="divider"></div>
+                <div class="panel-actions">
+                    <button class="secondary" onclick="stAdd()">新增</button>
+                    <button class="secondary" onclick="stUpdate()">修改</button>
+                    <button class="secondary" onclick="stDel()">删除</button>
+                </div>
+                <div class="form-row">
+                    <input id="st_sid" placeholder="座位编号">
+                    <select id="st_sfloor">
+                <option value="">选择楼层</option>
+                <option value="1">1楼</option>
+                <option value="2">2楼</option>
+                <option value="3">3楼</option>
+                <option value="4">4楼</option>
+            </select>
+                    <input id="st_sroom" placeholder="自习室">
+                    <select id="st_sstatus">
+                <option value="">座位状态</option>
+                <option value="空闲">空闲</option>
+                <option value="占用">占用</option>
+                <option value="维修">维修</option>
+            </select>
+                </div>
+                <table id="st_table"></table>
+            </div>
+
+            <!-- 借阅管理 (borrow_reserve表) -->
+            <div id="borrow" class="panel" style="display:none">
+                <h2>借阅管理</h2>
+                <div class="search-bar">
+                    <input id="br_search_input" placeholder="输入读者编号/类型查询">
+                    <button onclick="brSearch()">查询</button>
+                    <button onclick="brList()">显示全部</button>
+                </div>
+                <div class="divider"></div>
+                <div class="panel-actions">
+                    <button class="secondary" onclick="brAdd()">新增</button>
+                    <button class="secondary" onclick="brUpdate()">修改</button>
+                    <button class="secondary" onclick="brDel()">删除</button>
+                </div>
+                <div class="form-row">
+                    <input id="br_rid" placeholder="读者编号">
+                    <input id="br_bid" placeholder="图书ISBN(借书时填)">
+                    <input id="br_sid" placeholder="座位号(预约时填)">
+                    <select id="br_type">
+                <option value="">借阅类型</option>
+                <option value="借书">借书</option>
+                <option value="预约座位">预约座位</option>
+            </select>
+                </div>
+                <div class="form-row">
+                    <select id="br_state">
+                <option value="">借阅状态</option>
+                <option value="待完成">待完成</option>
+                <option value="已完成">已完成</option>
+                <option value="取消">取消</option>
+                <option value="爽约">爽约</option>
+            </select>
+                    <select id="br_pay_state">
+                <option value="">缴费状态</option>
+                <option value="无罚款">无罚款</option>
+                <option value="未缴费">未缴费</option>
+                <option value="已缴费">已缴费</option>
+            </select>
+                    <input id="br_real_end" type="datetime-local" placeholder="实际结束时间">
+                </div>
+                <table id="br_table"></table>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+
+</html>
