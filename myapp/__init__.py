@@ -7,7 +7,7 @@ from flask import Flask, render_template
 from flask_cors import CORS
 import importlib
 
-from .core.utils import CustomJSONEncoder
+from .core.utils import CustomJSONProvider
 
 
 def create_app():
@@ -16,9 +16,9 @@ def create_app():
     app.secret_key = "library_admin_2026"
     CORS(app, supports_credentials=True)
 
-    # JSON encoder and settings
-    app.json_provider_class = CustomJSONEncoder
-    app.config['JSON_AS_ASCII'] = False
+    # 使用自定义 JSON 提供者：Decimal/日期/时间正确序列化，中文直接输出。
+    # 注意：必须在应用实例上直接赋值 app.json，事后修改 json_provider_class 无效。
+    app.json = CustomJSONProvider(app)
 
     # Register built-in blueprints from the organized blueprints package.
     for mod_name, attr in (('auth', 'auth_bp'), ('reader', 'reader_bp'),

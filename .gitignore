@@ -1,0 +1,15 @@
+# Python 字节码缓存
+__pycache__/
+*.py[cod]
+
+# 虚拟环境
+venv/
+.venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+
+# 日志
+*.log

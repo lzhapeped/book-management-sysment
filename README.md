@@ -12,7 +12,7 @@
 pip install -r requirements.txt
 ```
 
-3. 修改 `myapp/core/db.py` 中的数据库连接配置（默认 localhost:3306, root/123456）
+3. 修改 `myapp/core/db.py` 中的数据库连接配置（默认 localhost:3306, root/1234）
 
 4. 启动应用（默认端口 5000）：
 
