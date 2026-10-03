@@ -531,3 +531,39 @@ window.rdList = rdList; window.rdSearch = rdSearch; window.rdAdd = rdAdd; window
 window.bkList = bkList; window.bkSearch = bkSearch; window.bkAdd = bkAdd; window.bkUpdate = bkUpdate; window.bkDel = bkDel;
 window.stList = stList; window.stSearch = stSearch; window.stAdd = stAdd; window.stUpdate = stUpdate; window.stDel = stDel;
 window.brList = brList; window.brSearch = brSearch; window.brAdd = brAdd; window.brUpdate = brUpdate; window.brDel = brDel;
+
+// ===== 回车键快捷支持 =====
+// 规则：
+//   搜索框按回车 -> 触发对应"查询"
+//   各板块表单输入框按回车 -> 触发对应"新增"
+//   登录表单已用原生 form 支持，不受此处影响
+(function () {
+    var SEARCH_MAP = {
+        rd_search_input: "rdSearch",
+        bk_search_input: "bkSearch",
+        st_search_input: "stSearch",
+        br_search_input: "brSearch"
+    };
+    var ADD_PREFIX = { rd: "rdAdd", bk: "bkAdd", st: "stAdd", br: "brAdd" };
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter" || e.ctrlKey || e.altKey || e.shiftKey) return;
+        var el = e.target;
+        if (!el || el.tagName !== "INPUT" || !el.id) return;
+        // 登录表单交给原生 form 处理，避免重复触发
+        if (el.id === "login_user" || el.id === "login_pwd") return;
+
+        var searchFn = SEARCH_MAP[el.id];
+        if (searchFn && typeof window[searchFn] === "function") {
+            e.preventDefault();
+            window[searchFn]();
+            return;
+        }
+        var prefix = el.id.split("_")[0];
+        var addFn = ADD_PREFIX[prefix];
+        if (addFn && typeof window[addFn] === "function") {
+            e.preventDefault();
+            window[addFn]();
+        }
+    });
+})();
