@@ -12,9 +12,11 @@
 
     <div id="login" class="login">
         <h2>用户登录</h2>
-        <input id="login_user" placeholder="账号">
-        <input id="login_pwd" placeholder="密码" type="password">
-        <button onclick="login()">登录</button>
+        <form onsubmit="login(); return false;">
+            <input id="login_user" placeholder="账号" autocomplete="username" autofocus>
+            <input id="login_pwd" placeholder="密码" type="password" autocomplete="current-password">
+            <button type="submit">登录</button>
+        </form>
     </div>
 
     <div id="main" style="display:none">
